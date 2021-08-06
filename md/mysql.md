@@ -134,10 +134,10 @@
                     employees
                 where   
                     salary not between 8000 and 17000
-                order by salary desc;
-            ```  
+                order by salary desc;  
+             ```  
         14. 常见函数  
-            ```  
-                  
+            ```    
+                     
             ```
 
