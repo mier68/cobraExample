@@ -1,6 +1,11 @@
 package sql2struct
 
-const structTPL = `type {{.TableName}} struct{
+import (
+	"fmt"
+	"text/template"
+)
+
+const structTpl = `type {{.TableName}} struct{
 	{{range .Columns}}  {{$length := len .Comment}} {{if gt $length 0}} // {{.Comment}} {{else}} // {{.Name}}  {{end}} 
 	{{$Typelen := len .Type}} {{if gt $Typelen 0}} {{.Name}} {{.Type}}  {{.Tag}} {{else}} {{.Name}}{{end}} 
 	{{end}}
@@ -9,18 +14,39 @@ func (model {{.TableName}})TableName() string{
 	return "{{.TableName}}"
 }`
 
-
-type StructTemplate struct{
+type StructTemplate struct {
 	structTpl string
 }
 
-type StructColumn struct{
-	Name string
-	Type string
-	Tag string
+type StructColumn struct {
+	Name    string
+	Type    string
+	Tag     string
 	Comment string
 }
-type StructTemplateDB struct{
+type StructTemplateDB struct {
 	TableName string
-	Columns []*StructColumn
+	Columns   []*StructColumn
+}
+
+func NewStructTemplate() *StructTemplate {
+	return &StructTemplate{structTpl: structTpl}
+}
+
+func (t *StructTemplate) AssemblyColumns(tbColumns []*TableColumn) []*StructColumn {
+	tplColumns := make([]*StructColumn, 0, len(tbColumns))
+	for _, v := range tbColumns {
+		tag := fmt.Sprintf("`"+"json:"+"\"%s\""+"`",v.ColumnName)
+		tplColumns = append(tplColumns, &StructColumn{
+			Name : v.ColumnName,
+			Type : DBTypeToStructType[v.ColumnType]
+			Tag: tag,
+			Comment: v.ColumnComment,
+		})
+	}
+	return tplColumns
+}
+
+func(t *StructTemplate)Generate(tableName string,tplColumns []*StructColumn)error{
+	template.Must()
 }
