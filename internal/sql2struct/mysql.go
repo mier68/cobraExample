@@ -2,7 +2,9 @@ package sql2struct
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -28,6 +30,18 @@ type TableColumn struct {
 	ColumnComment string
 }
 
+var DBTypeToStructType = map[string]string{
+	"int":"int32",
+	"tinyint":"int8",
+	"smallint":"int16",
+	"mediumint":"int32",
+	"bigint":"int64",
+	"bit":"int",
+	"bool":"bool",
+	"enum":"string",
+	"set":"string",
+	"varchar":"string",
+}
 func NewDBModel(Info *DBInfo) *DBModel {
 	return &DBModel{
 		DBInfo: Info,
@@ -50,3 +64,25 @@ func (m *DBModel) Connect() error {
 	}
 	return nil
 }
+
+func (m *DBModel)GetColumns(dbName,tableName string)([]*TableColumn,error){
+	query := "select column_name,data_type,column_key, "+"is_nullable,column_type,column_comment " + "from columns where table_schema = ? adn tabble_name = ?"
+	rows ,err := m.DBEngine.Query(query,dbName,tableName)  
+	if err != nil{
+		return nil,err
+	}
+	if rows == nil{
+		return nil,errors.New("no data")
+	}
+	defer rows.Close()
+	var columns []*TableColumn
+	for rows.Next(){
+		var column TableColumn
+		err := rows.Scan(&column.ColumnName,&column.DataType,&column.ColumnKey,&column.IsNullable,&column.ColumnType,&column.ColumnComment)
+		if err != nil{
+			return nil,err
+		}
+		columns = append(columns, &column)
+	}
+	return columns,nil
+} 
