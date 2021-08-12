@@ -2,6 +2,7 @@ package sql2struct
 
 import (
 	"fmt"
+	"os"
 	"text/template"
 )
 
@@ -36,17 +37,27 @@ func NewStructTemplate() *StructTemplate {
 func (t *StructTemplate) AssemblyColumns(tbColumns []*TableColumn) []*StructColumn {
 	tplColumns := make([]*StructColumn, 0, len(tbColumns))
 	for _, v := range tbColumns {
-		tag := fmt.Sprintf("`"+"json:"+"\"%s\""+"`",v.ColumnName)
+		tag := fmt.Sprintf("`"+"json:"+"\"%s\""+"`", v.ColumnName)
 		tplColumns = append(tplColumns, &StructColumn{
-			Name : v.ColumnName,
-			Type : DBTypeToStructType[v.ColumnType]
-			Tag: tag,
+			Name:    v.ColumnName,
+			Type:    DBTypeToStructType[v.ColumnType],
+			Tag:     tag,
 			Comment: v.ColumnComment,
 		})
 	}
 	return tplColumns
 }
 
-func(t *StructTemplate)Generate(tableName string,tplColumns []*StructColumn)error{
-	template.Must()
+func (t *StructTemplate) Generate(tableName string, tplColumns []*StructColumn) error {
+	tpl := template.Must(template.New("sql2struct").Parse(t.structTpl))
+	tplDB := StructTemplateDB{
+		TableName: tableName,
+		Columns:   tplColumns,
+	}
+	//把结果输出到stdout中；
+	err := tpl.Execute(os.Stdout, tplDB)
+	if err != nil {
+		return err
+	}
+	return nil
 }
