@@ -65,7 +65,7 @@ func (m *DBModel) Connect() error {
 }
 
 func (m *DBModel)GetColumns(dbName,tableName string)([]*TableColumn,error){
-	query := "select column_name,data_type,column_key, "+"is_nullable,column_type,column_comment " + "from columns where table_schema = ? adn tabble_name = ?"
+	query := "select column_name,data_type,column_key, "+"is_nullable,column_type,column_comment " + "from columns where table_schema = ? and table_name = ?"
 	rows ,err := m.DBEngine.Query(query,dbName,tableName)  
 	if err != nil{
 		return nil,err

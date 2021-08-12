@@ -47,6 +47,22 @@ var sql2structCmd = &cobra.Command{
 		}
 		tmpl := sql2struct.NewStructTemplate()
 		templateColumns := tmpl.AssemblyColumns(columns)
-		err = tmpl.Generate(tableName)
+		err = tmpl.Generate(tableName,templateColumns)
+		if err != nil{
+			log.Fatalf("tmpl.Generate err :%v",err)
+		}
 	},
+}
+
+
+
+func init(){
+	sqlCmd.AddCommand(sql2structCmd)
+	sql2structCmd.Flags().StringVarP(&username,"username","","","数据库的账号")
+	sql2structCmd.Flags().StringVarP(&password,"password","","","数据库的密码")
+	sql2structCmd.Flags().StringVarP(&host,"host","","127.0.0.1:3306","数据库的host")
+	sql2structCmd.Flags().StringVarP(&charset,"charset","","utf8mb4","数据库的编码")
+	sql2structCmd.Flags().StringVarP(&dbType,"dbType","","mysql","数据库的类型")
+	sql2structCmd.Flags().StringVarP(&dbName,"db","","","数据库的名称")
+	sql2structCmd.Flags().StringVarP(&tableName,"table","","","数据库的表名称")
 }
